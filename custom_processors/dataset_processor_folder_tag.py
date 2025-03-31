@@ -33,12 +33,12 @@ class DatasetProcessorFolderTag(DatasetProcessor):
             else LUNGS_DATASET_DISEASE_DICT
         )
         self.class_labels = list(
-            self._get_class_labels(self.dataset_path, self.set_path, self.class_dict)
+            self._get_class_labels(self.set_path, self.class_dict)
         )
         self.all_labels = {
             "labels": self._process_labels(self.class_labels),
         }
-        self.json_file_path = os.path.join(self.dataset_path, "dataset.json")
+        self.json_file_path = os.path.join(self.set_path, "dataset.json")
         self.save_labels_as_json(self.json_file_path, self.all_labels)
 
     def _process_labels(self, class_labels):
@@ -54,7 +54,7 @@ class DatasetProcessorFolderTag(DatasetProcessor):
         return self.all_labels
 
     @staticmethod
-    def _get_class_labels(dataset_path: str, set_path: str, class_dict: dict):
+    def _get_class_labels(set_path: str, class_dict: dict):
         data_folder = os.listdir(set_path)
 
         for tag in data_folder:
@@ -64,7 +64,7 @@ class DatasetProcessorFolderTag(DatasetProcessor):
             for image in images:
                 image_absolute_path = os.path.join(image_folder_path, image)
                 image_relative_path = os.path.relpath(
-                    image_absolute_path, dataset_path
+                    image_absolute_path, set_path
                 ).replace("\\", "/")
                 yield image_relative_path, class_dict[tag.lower()]
 
