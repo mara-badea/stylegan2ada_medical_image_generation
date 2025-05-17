@@ -34,9 +34,6 @@ class DatasetProcessorCSV(DatasetProcessor):
         self.save_split(dataset_path, process_type)
         super().__init__(dataset_path, process_type)
 
-
-
-
     def _load_labels(self):
         df = pd.read_csv(self.label_csv_path)
         df.columns = [col.lower().replace("_", " ") if col != "Path" else col for col in df.columns]
