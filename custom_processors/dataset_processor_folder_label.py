@@ -1,10 +1,8 @@
 import json
 
-from custom_processors.dataset_processor import DatasetProcessor
+from .dataset_processor import DatasetProcessor
 import os
 
-
-SCAN_TYPE_DICT = {"rmn": 0, "mri": 0, "xray": 1, "ct": 2}
 
 BRAIN_DATASET_DISEASE_DICT = {
     "notumor": 0,
@@ -13,19 +11,14 @@ BRAIN_DATASET_DISEASE_DICT = {
     "pituitary": 3,
 }
 
-LUNGS_DATASET_DISEASE_DICT = {"normal": 0, "pneumonia": 4}
-
-
-class DatasetProcessorFolderTag(DatasetProcessor):
+class DatasetProcessorFolderLabel(DatasetProcessor):
     def __init__(
         self,
         dataset_path: str,
-        scanned_organ: str,
         scan_type: str,
         process_type: str = "train",
     ):
         super().__init__(dataset_path, process_type)
-        self.organ_label = 0 if scanned_organ.lower() == "brain" else 1
         self.scan_label = SCAN_TYPE_DICT[scan_type.lower()]
         self.class_dict = (
             BRAIN_DATASET_DISEASE_DICT
@@ -44,9 +37,7 @@ class DatasetProcessorFolderTag(DatasetProcessor):
     def _process_labels(self, class_labels):
         labels_with_metadata = []
         for img_path, disease_label in class_labels:
-            label = int(
-                f"{str(disease_label)}{str(self.organ_label)}{str(self.scan_label)}"
-            )
+            label = disease_label
             labels_with_metadata.append([img_path, label])
         return labels_with_metadata
 
@@ -57,8 +48,8 @@ class DatasetProcessorFolderTag(DatasetProcessor):
     def _get_class_labels(set_path: str, class_dict: dict):
         data_folder = os.listdir(set_path)
 
-        for tag in data_folder:
-            image_folder_path = os.path.join(set_path, tag)
+        for label in data_folder:
+            image_folder_path = os.path.join(set_path, label)
             images = os.listdir(image_folder_path)
 
             for image in images:
@@ -66,10 +57,11 @@ class DatasetProcessorFolderTag(DatasetProcessor):
                 image_relative_path = os.path.relpath(
                     image_absolute_path, set_path
                 ).replace("\\", "/")
-                yield image_relative_path, class_dict[tag.lower()]
+                yield image_relative_path, class_dict[label.lower()]
 
     @staticmethod
     def save_labels_as_json(path: str, labels: dict):
         json_file = json.dumps(labels, indent=4)
         with open(path, "w+") as f:
             f.write(json_file)
+
